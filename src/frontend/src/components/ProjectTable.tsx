@@ -120,11 +120,13 @@ export function ProjectTable({ region }: ProjectTableProps) {
                 </TableCell>
               ))}
               <TableCell className="py-2 px-3 align-middle">
-                <span className="text-xs text-foreground">
-                  {project.qnrName || (
-                    <span className="text-muted-foreground">—</span>
-                  )}
-                </span>
+                <InlineCell
+                  value={project.qnrName}
+                  fieldName="qnrName"
+                  onSave={(newValue) =>
+                    handleSave(project, "qnrName", newValue)
+                  }
+                />
               </TableCell>
             </TableRow>
           ))}
