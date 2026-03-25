@@ -33,6 +33,7 @@ export interface Project {
 }
 export interface _SERVICE {
   'addProject' : ActorMethod<[Project], bigint>,
+  'deleteProject' : ActorMethod<[bigint], boolean>,
   'getAllProjects' : ActorMethod<[], Array<Project>>,
   'getEditHistory' : ActorMethod<[bigint, string], Array<EditEntry>>,
   'getProjectEditHistory' : ActorMethod<[bigint], Array<EditEntry>>,

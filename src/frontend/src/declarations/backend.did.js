@@ -32,6 +32,7 @@ export const EditEntry = IDL.Record({
 
 export const idlService = IDL.Service({
   'addProject' : IDL.Func([Project], [IDL.Nat], []),
+  'deleteProject' : IDL.Func([IDL.Nat], [IDL.Bool], []),
   'getAllProjects' : IDL.Func([], [IDL.Vec(Project)], ['query']),
   'getEditHistory' : IDL.Func(
       [IDL.Nat, IDL.Text],
@@ -78,6 +79,7 @@ export const idlFactory = ({ IDL }) => {
   
   return IDL.Service({
     'addProject' : IDL.Func([Project], [IDL.Nat], []),
+    'deleteProject' : IDL.Func([IDL.Nat], [IDL.Bool], []),
     'getAllProjects' : IDL.Func([], [IDL.Vec(Project)], ['query']),
     'getEditHistory' : IDL.Func(
         [IDL.Nat, IDL.Text],

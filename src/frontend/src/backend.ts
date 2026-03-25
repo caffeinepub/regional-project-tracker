@@ -112,6 +112,7 @@ export interface EditEntry {
 }
 export interface backendInterface {
     addProject(project: Project): Promise<bigint>;
+    deleteProject(projectId: bigint): Promise<boolean>;
     getAllProjects(): Promise<Array<Project>>;
     getEditHistory(projectId: bigint, fieldName: string): Promise<Array<EditEntry>>;
     getProjectEditHistory(projectId: bigint): Promise<Array<EditEntry>>;
@@ -131,6 +132,20 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.addProject(arg0);
+            return result;
+        }
+    }
+    async deleteProject(arg0: bigint): Promise<boolean> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.deleteProject(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.deleteProject(arg0);
             return result;
         }
     }

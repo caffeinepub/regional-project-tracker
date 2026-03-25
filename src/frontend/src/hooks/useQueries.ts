@@ -74,8 +74,9 @@ export function useDeleteProject() {
   return useMutation({
     mutationFn: async (projectId: bigint) => {
       if (!actor) throw new Error("Actor not available");
-      // Cast to any since deleteProject is added to backend but bindgen types are auto-generated
-      return (actor as any).deleteProject(projectId) as Promise<boolean>;
+      const result = await actor.deleteProject(projectId);
+      if (!result) throw new Error("Project not found");
+      return result;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["projects"] });
