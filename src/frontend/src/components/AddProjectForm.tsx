@@ -13,9 +13,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Loader2, X } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { REGION_VALUES } from "../App";
 import { useAddProject } from "../hooks/useQueries";
 
 const STATUS_OPTIONS = ["Active", "Inactive", "Pending", "Complete", "N/A"];
@@ -27,6 +28,7 @@ interface AddProjectFormProps {
 }
 
 interface FormData {
+  regionValue: string;
   projectName: string;
   linkStatus: string;
   qnrName: string;
@@ -37,19 +39,21 @@ interface FormData {
   dataDelivery: string;
 }
 
-const defaultForm: FormData = {
-  projectName: "",
-  linkStatus: "Pending",
-  qnrName: "",
-  receivedDate: "",
-  dataStatus: "Pending",
-  quotaRedirectStatus: "Pending",
-  projectLaunchDate: "",
-  dataDelivery: "",
-};
-
 export function AddProjectForm({ open, onClose, region }: AddProjectFormProps) {
-  const [form, setForm] = useState<FormData>(defaultForm);
+  const regionOptions = REGION_VALUES[region] ?? [region];
+
+  const [form, setForm] = useState<FormData>({
+    regionValue: regionOptions[0],
+    projectName: "",
+    linkStatus: "Pending",
+    qnrName: "",
+    receivedDate: "",
+    dataStatus: "Pending",
+    quotaRedirectStatus: "Pending",
+    projectLaunchDate: "",
+    dataDelivery: "",
+  });
+
   const { mutateAsync, isPending } = useAddProject();
 
   const set = (field: keyof FormData) => (value: string) =>
@@ -64,7 +68,7 @@ export function AddProjectForm({ open, onClose, region }: AddProjectFormProps) {
     try {
       await mutateAsync({
         id: 0n,
-        region,
+        region: form.regionValue,
         projectName: form.projectName,
         linkStatus: form.linkStatus,
         qnrName: form.qnrName,
@@ -76,7 +80,17 @@ export function AddProjectForm({ open, onClose, region }: AddProjectFormProps) {
         createdAt: 0n,
       });
       toast.success("Project added successfully");
-      setForm(defaultForm);
+      setForm({
+        regionValue: regionOptions[0],
+        projectName: "",
+        linkStatus: "Pending",
+        qnrName: "",
+        receivedDate: "",
+        dataStatus: "Pending",
+        quotaRedirectStatus: "Pending",
+        projectLaunchDate: "",
+        dataDelivery: "",
+      });
       onClose();
     } catch {
       toast.error("Failed to add project");
@@ -93,15 +107,35 @@ export function AddProjectForm({ open, onClose, region }: AddProjectFormProps) {
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4 mt-2">
-          {/* Region (locked) */}
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label className="text-xs font-medium">Region</Label>
-              <Input
-                value={region}
-                disabled
-                className="mt-1 bg-muted text-sm"
-              />
+              {regionOptions.length > 1 ? (
+                <Select
+                  value={form.regionValue}
+                  onValueChange={set("regionValue")}
+                >
+                  <SelectTrigger
+                    data-ocid="add_project.region.select"
+                    className="mt-1 text-sm"
+                  >
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {regionOptions.map((o) => (
+                      <SelectItem key={o} value={o}>
+                        {o}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              ) : (
+                <Input
+                  value={form.regionValue}
+                  disabled
+                  className="mt-1 bg-muted text-sm"
+                />
+              )}
             </div>
             <div>
               <Label htmlFor="projectName" className="text-xs font-medium">

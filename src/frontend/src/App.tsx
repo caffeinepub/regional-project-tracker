@@ -5,8 +5,23 @@ import { HomeView } from "./components/HomeView";
 import { ProjectTable } from "./components/ProjectTable";
 import { Sidebar } from "./components/Sidebar";
 
-const REGIONS = ["Healthcare", "Insightz", "Middle East", "Europe"] as const;
-type Region = (typeof REGIONS)[number];
+export const REGIONS = [
+  "Healthcare",
+  "Insightz",
+  "Middle East",
+  "Europe",
+  "Internal (SG)",
+] as const;
+export type Region = (typeof REGIONS)[number];
+
+export const REGION_VALUES: Record<string, string[]> = {
+  Healthcare: ["Healthcare", "Noram"],
+  Insightz: ["Insightz"],
+  "Middle East": ["Middle East", "COE"],
+  Europe: ["Europe", "Mckinsey"],
+  "Internal (SG)": ["Internal (SG)"],
+};
+
 type SubView = "home" | "track" | "add";
 
 export default function App() {
@@ -24,12 +39,10 @@ export default function App() {
     <div className="min-h-screen flex bg-background">
       <Sidebar activePage={activePage} onNavigate={setActivePage} />
 
-      {/* Main content */}
       <main className="flex-1 ml-[240px] min-h-screen flex flex-col">
-        {/* Page header */}
         <header className="bg-card border-b border-border px-8 py-5">
           <h1 className="text-[28px] font-semibold text-foreground leading-tight">
-            Project Tracking Dashboard
+            BA Research operations - Project Tracker
           </h1>
           <p className="text-sm text-muted-foreground mt-0.5">
             Track and manage projects across all regions
@@ -37,13 +50,12 @@ export default function App() {
         </header>
 
         <div className="flex-1 px-8 py-6">
-          {/* Region tabs */}
-          <div className="bg-card border border-border rounded-lg shadow-xs inline-flex p-1 mb-6">
+          <div className="bg-card border border-border rounded-lg shadow-xs inline-flex flex-wrap p-1 mb-6 gap-1">
             {REGIONS.map((region) => (
               <button
                 type="button"
                 key={region}
-                data-ocid={`regions.${region.toLowerCase().replace(/ /g, "_")}.tab`}
+                data-ocid={`regions.${region.toLowerCase().replace(/ /g, "_").replace(/[()]/g, "")}.tab`}
                 onClick={() => handleRegionChange(region)}
                 className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                   activeRegion === region
@@ -56,7 +68,6 @@ export default function App() {
             ))}
           </div>
 
-          {/* Sub-navigation */}
           <div className="flex items-center gap-2 mb-6">
             <button
               type="button"
@@ -92,7 +103,6 @@ export default function App() {
             </button>
           </div>
 
-          {/* Active view */}
           <div>
             {subView === "home" && (
               <HomeView
@@ -118,7 +128,6 @@ export default function App() {
         </div>
       </main>
 
-      {/* Add Project Modal */}
       <AddProjectForm
         open={showAddProject}
         onClose={() => setShowAddProject(false)}

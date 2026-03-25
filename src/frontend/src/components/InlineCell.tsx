@@ -2,22 +2,40 @@ import { Pencil } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { StatusChip } from "./StatusChip";
 
-const STATUS_OPTIONS = ["Active", "Inactive", "Pending", "Complete", "N/A"];
+const LINK_STATUS_OPTIONS = [
+  "Programming",
+  "Test link delivered",
+  "Changes Phase",
+  "Live",
+];
+const DATA_STATUS_OPTIONS = ["Pending", "WIP", "Completed"];
+const QUOTA_STATUS_OPTIONS = ["Not Received", "Pending", "Completed"];
+
 const STATUS_FIELDS = ["linkStatus", "dataStatus", "quotaRedirectStatus"];
 const DATE_FIELDS = ["receivedDate", "projectLaunchDate", "dataDelivery"];
+
+function getStatusOptions(fieldName: string): string[] {
+  if (fieldName === "linkStatus") return LINK_STATUS_OPTIONS;
+  if (fieldName === "dataStatus") return DATA_STATUS_OPTIONS;
+  if (fieldName === "quotaRedirectStatus") return QUOTA_STATUS_OPTIONS;
+  return [];
+}
 
 interface InlineCellProps {
   value: string;
   fieldName: string;
   onSave: (newValue: string) => void;
+  customOptions?: string[];
 }
 
 function StatusCombobox({
   value,
+  options,
   onCommit,
   onCancel,
 }: {
   value: string;
+  options: string[];
   onCommit: (val: string) => void;
   onCancel: () => void;
 }) {
@@ -30,7 +48,7 @@ function StatusCombobox({
     inputRef.current?.focus();
   }, []);
 
-  const filtered = STATUS_OPTIONS.filter((opt) =>
+  const filtered = options.filter((opt) =>
     opt.toLowerCase().includes(draft.toLowerCase()),
   );
 
@@ -66,7 +84,7 @@ function StatusCombobox({
           }
         }}
         placeholder="Type or pick..."
-        className="border border-primary rounded px-1.5 py-0.5 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-primary w-28"
+        className="border border-primary rounded px-1.5 py-0.5 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-primary w-36"
       />
       {open && filtered.length > 0 && (
         <ul className="absolute z-50 top-full left-0 mt-0.5 bg-white border border-border rounded shadow-md min-w-full text-xs">
@@ -91,7 +109,12 @@ function StatusCombobox({
   );
 }
 
-export function InlineCell({ value, fieldName, onSave }: InlineCellProps) {
+export function InlineCell({
+  value,
+  fieldName,
+  onSave,
+  customOptions,
+}: InlineCellProps) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(value);
   const [hovered, setHovered] = useState(false);
@@ -100,7 +123,6 @@ export function InlineCell({ value, fieldName, onSave }: InlineCellProps) {
   useEffect(() => {
     setDraft(value);
   }, [value]);
-
   useEffect(() => {
     if (editing && inputRef.current) {
       inputRef.current.focus();
@@ -110,19 +132,24 @@ export function InlineCell({ value, fieldName, onSave }: InlineCellProps) {
   const commit = (val?: string) => {
     const finalVal = val ?? draft;
     setEditing(false);
-    if (finalVal !== value) {
-      onSave(finalVal);
-    }
+    if (finalVal !== value) onSave(finalVal);
   };
 
   const isStatus = STATUS_FIELDS.includes(fieldName);
   const isDate = DATE_FIELDS.includes(fieldName);
+  const comboOptions =
+    customOptions && customOptions.length > 0
+      ? customOptions
+      : isStatus
+        ? getStatusOptions(fieldName)
+        : null;
 
   if (editing) {
-    if (isStatus) {
+    if (comboOptions) {
       return (
         <StatusCombobox
           value={draft}
+          options={comboOptions}
           onCommit={(val) => {
             setDraft(val);
             commit(val);

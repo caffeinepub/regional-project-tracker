@@ -61,11 +61,24 @@ export function useAddProject() {
       if (!actor) throw new Error("Actor not available");
       return actor.addProject(project);
     },
-    onSuccess: (_data, variables) => {
-      queryClient.invalidateQueries({
-        queryKey: ["projects", variables.region],
-      });
-      queryClient.invalidateQueries({ queryKey: ["projects", "all"] });
+    onSuccess: () => {
+      // Invalidate all region queries since sub-values map to parent tabs
+      queryClient.invalidateQueries({ queryKey: ["projects"] });
+    },
+  });
+}
+
+export function useDeleteProject() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (projectId: bigint) => {
+      if (!actor) throw new Error("Actor not available");
+      // Cast to any since deleteProject is added to backend but bindgen types are auto-generated
+      return (actor as any).deleteProject(projectId) as Promise<boolean>;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["projects"] });
     },
   });
 }
@@ -91,11 +104,15 @@ export function useUpdateProjectField() {
         fieldName,
         newValue,
       );
-      return { result, region };
+      return { result, region, fieldName };
     },
-    onSuccess: ({ region }) => {
-      queryClient.invalidateQueries({ queryKey: ["projects", region] });
-      queryClient.invalidateQueries({ queryKey: ["editHistory"] });
+    onSuccess: ({ fieldName }) => {
+      // When region field changes, invalidate all tabs since a project may move between tabs
+      // For other fields, also invalidate all to keep things consistent
+      queryClient.invalidateQueries({ queryKey: ["projects"] });
+      if (fieldName !== "region") {
+        queryClient.invalidateQueries({ queryKey: ["editHistory"] });
+      }
     },
   });
 }

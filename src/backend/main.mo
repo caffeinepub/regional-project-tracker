@@ -37,6 +37,32 @@ actor {
     };
   };
 
+  // Region tab -> sub-values mapping
+  // A project belongs to a tab if its region value is in the tab's sub-values list
+  func regionBelongsToTab(projectRegion : Text, tab : Text) : Bool {
+    switch (tab) {
+      case ("Healthcare") {
+        Text.equal(projectRegion, "Healthcare") or Text.equal(projectRegion, "Noram");
+      };
+      case ("Middle East") {
+        Text.equal(projectRegion, "Middle East") or Text.equal(projectRegion, "COE");
+      };
+      case ("Europe") {
+        Text.equal(projectRegion, "Europe") or Text.equal(projectRegion, "Mckinsey");
+      };
+      case ("Insightz") {
+        Text.equal(projectRegion, "Insightz");
+      };
+      case ("Internal (SG)") {
+        Text.equal(projectRegion, "Internal (SG)");
+      };
+      case (_) {
+        // Fallback: exact match
+        Text.equal(projectRegion, tab);
+      };
+    };
+  };
+
   // Persistent data
   var nextProjectId = 1;
   var nextEditId = 1;
@@ -54,6 +80,14 @@ actor {
     projects.add(nextProjectId, newProject);
     nextProjectId += 1;
     newProject.id;
+  };
+
+  // Delete a project
+  public shared ({ caller = _ }) func deleteProject(projectId : Nat) : async Bool {
+    switch (projects.get(projectId)) {
+      case (null) { false };
+      case (?_) { ignore projects.remove(projectId); true };
+    };
   };
 
   // Helper to get project
@@ -126,11 +160,11 @@ actor {
     projects.values().toArray();
   };
 
-  // Get projects by region
+  // Get projects by region tab (includes all sub-values for that tab)
   public query ({ caller }) func getProjectsByRegion(region : Text) : async [Project] {
     projects.values().toArray().filter(
       func(p) {
-        Text.equal(p.region, region);
+        regionBelongsToTab(p.region, region);
       }
     );
   };

@@ -30,6 +30,7 @@ export interface EditEntry {
 }
 export interface backendInterface {
     addProject(project: Project): Promise<bigint>;
+    deleteProject(projectId: bigint): Promise<boolean>;
     getAllProjects(): Promise<Array<Project>>;
     getEditHistory(projectId: bigint, fieldName: string): Promise<Array<EditEntry>>;
     getProjectEditHistory(projectId: bigint): Promise<Array<EditEntry>>;
