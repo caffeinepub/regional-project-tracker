@@ -25,6 +25,83 @@ function formatTs(ts: bigint): string {
   return new Date(Number(ts / 1_000_000n)).toLocaleString();
 }
 
+// QNR history: show as a chronological progression (oldest first, latest highlighted)
+function QnrHistoryList({ entries }: { entries: EditEntry[] }) {
+  const sorted = [...entries].sort((a, b) => Number(a.timestamp - b.timestamp));
+
+  // Build a progression list: initial value, then each newValue
+  type Version = { name: string; timestamp: bigint; isLatest: boolean };
+  const versions: Version[] = [];
+
+  if (sorted.length > 0) {
+    // First version is the oldValue of the first edit
+    if (sorted[0].oldValue) {
+      versions.push({
+        name: sorted[0].oldValue,
+        timestamp: sorted[0].timestamp,
+        isLatest: false,
+      });
+    }
+    sorted.forEach((entry, idx) => {
+      versions.push({
+        name: entry.newValue,
+        timestamp: entry.timestamp,
+        isLatest: idx === sorted.length - 1,
+      });
+    });
+  }
+
+  if (versions.length === 0) {
+    return (
+      <div className="py-10 text-center text-sm text-muted-foreground">
+        No QNR name history available.
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-1 py-2">
+      {versions.map((v, vIdx) => (
+        <div
+          key={`${v.name}-${v.timestamp}`}
+          className={`flex items-start gap-3 px-3 py-2.5 rounded-lg ${
+            v.isLatest
+              ? "bg-emerald-50 border border-emerald-200"
+              : "bg-muted/40 border border-transparent"
+          }`}
+        >
+          <div
+            className={`mt-0.5 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 ${
+              v.isLatest
+                ? "bg-emerald-600 text-white"
+                : "bg-muted-foreground/20 text-muted-foreground"
+            }`}
+          >
+            {vIdx + 1}
+          </div>
+          <div className="flex-1 min-w-0">
+            <div
+              className={`text-sm font-medium break-words ${
+                v.isLatest ? "text-emerald-700" : "text-foreground/70"
+              }`}
+            >
+              {v.name || "(empty)"}
+              {v.isLatest && (
+                <span className="ml-2 text-[10px] bg-emerald-600 text-white px-1.5 py-0.5 rounded-full font-semibold">
+                  Latest
+                </span>
+              )}
+            </div>
+            <div className="text-[11px] text-muted-foreground mt-0.5">
+              {formatTs(v.timestamp)}
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function HistoryRow({ entry, index }: { entry: EditEntry; index: number }) {
   return (
     <div
@@ -68,6 +145,9 @@ export function EditHistoryModal({
   const { data, isLoading } = fieldName ? fieldHistory : projectHistory;
 
   const entries = data ?? [];
+  const isQnr = fieldName === "qnrName";
+
+  // For non-QNR, sort newest first
   const sorted = [...entries].sort((a, b) => Number(b.timestamp - a.timestamp));
 
   const title = fieldName
@@ -96,6 +176,8 @@ export function EditHistoryModal({
                 <Skeleton key={i} className="h-14 w-full rounded" />
               ))}
             </div>
+          ) : isQnr ? (
+            <QnrHistoryList entries={entries} />
           ) : sorted.length === 0 ? (
             <div
               data-ocid="history.empty_state"

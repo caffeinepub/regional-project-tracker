@@ -29,6 +29,7 @@ export interface Project {
   'receivedDate' : string,
   'quotaRedirectStatus' : string,
   'linkStatus' : string,
+  'linkComments' : string,
   'dataStatus' : string,
 }
 export interface _SERVICE {

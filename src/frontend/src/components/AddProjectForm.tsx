@@ -19,7 +19,9 @@ import { toast } from "sonner";
 import { REGION_VALUES } from "../App";
 import { useAddProject } from "../hooks/useQueries";
 
-const STATUS_OPTIONS = ["Active", "Inactive", "Pending", "Complete", "N/A"];
+const LINK_STATUS_OPTIONS = ["Draft", "Live", "Closed"];
+const DATA_STATUS_OPTIONS = ["Pending", "WIP", "Completed"];
+const QUOTA_STATUS_OPTIONS = ["Not Received", "Pending", "Completed"];
 
 interface AddProjectFormProps {
   open: boolean;
@@ -31,6 +33,7 @@ interface FormData {
   regionValue: string;
   projectName: string;
   linkStatus: string;
+  linkComments: string;
   qnrName: string;
   receivedDate: string;
   dataStatus: string;
@@ -45,11 +48,12 @@ export function AddProjectForm({ open, onClose, region }: AddProjectFormProps) {
   const [form, setForm] = useState<FormData>({
     regionValue: regionOptions[0],
     projectName: "",
-    linkStatus: "Pending",
+    linkStatus: "Draft",
+    linkComments: "",
     qnrName: "",
     receivedDate: "",
     dataStatus: "Pending",
-    quotaRedirectStatus: "Pending",
+    quotaRedirectStatus: "Not Received",
     projectLaunchDate: "",
     dataDelivery: "",
   });
@@ -71,6 +75,7 @@ export function AddProjectForm({ open, onClose, region }: AddProjectFormProps) {
         region: form.regionValue,
         projectName: form.projectName,
         linkStatus: form.linkStatus,
+        linkComments: form.linkComments,
         qnrName: form.qnrName,
         receivedDate: form.receivedDate,
         dataStatus: form.dataStatus,
@@ -83,11 +88,12 @@ export function AddProjectForm({ open, onClose, region }: AddProjectFormProps) {
       setForm({
         regionValue: regionOptions[0],
         projectName: "",
-        linkStatus: "Pending",
+        linkStatus: "Draft",
+        linkComments: "",
         qnrName: "",
         receivedDate: "",
         dataStatus: "Pending",
-        quotaRedirectStatus: "Pending",
+        quotaRedirectStatus: "Not Received",
         projectLaunchDate: "",
         dataDelivery: "",
       });
@@ -163,7 +169,7 @@ export function AddProjectForm({ open, onClose, region }: AddProjectFormProps) {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {STATUS_OPTIONS.map((o) => (
+                  {LINK_STATUS_OPTIONS.map((o) => (
                     <SelectItem key={o} value={o}>
                       {o}
                     </SelectItem>
@@ -184,6 +190,20 @@ export function AddProjectForm({ open, onClose, region }: AddProjectFormProps) {
                 className="mt-1 text-sm"
               />
             </div>
+          </div>
+
+          <div>
+            <Label htmlFor="linkComments" className="text-xs font-medium">
+              Link Comments
+            </Label>
+            <Input
+              id="linkComments"
+              data-ocid="add_project.link_comments.input"
+              value={form.linkComments}
+              onChange={(e) => set("linkComments")(e.target.value)}
+              placeholder="Optional comments about the link"
+              className="mt-1 text-sm"
+            />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -210,7 +230,7 @@ export function AddProjectForm({ open, onClose, region }: AddProjectFormProps) {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {STATUS_OPTIONS.map((o) => (
+                  {DATA_STATUS_OPTIONS.map((o) => (
                     <SelectItem key={o} value={o}>
                       {o}
                     </SelectItem>
@@ -236,7 +256,7 @@ export function AddProjectForm({ open, onClose, region }: AddProjectFormProps) {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {STATUS_OPTIONS.map((o) => (
+                  {QUOTA_STATUS_OPTIONS.map((o) => (
                     <SelectItem key={o} value={o}>
                       {o}
                     </SelectItem>

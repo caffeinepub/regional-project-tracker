@@ -2,12 +2,7 @@ import { Pencil } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { StatusChip } from "./StatusChip";
 
-const LINK_STATUS_OPTIONS = [
-  "Programming",
-  "Test link delivered",
-  "Changes Phase",
-  "Live",
-];
+const LINK_STATUS_OPTIONS = ["Draft", "Live", "Closed"];
 const DATA_STATUS_OPTIONS = ["Pending", "WIP", "Completed"];
 const QUOTA_STATUS_OPTIONS = ["Not Received", "Pending", "Completed"];
 
@@ -26,6 +21,44 @@ interface InlineCellProps {
   fieldName: string;
   onSave: (newValue: string) => void;
   customOptions?: string[];
+}
+
+// Pure dropdown for Link Status (no free text)
+function LinkStatusDropdown({
+  value,
+  options,
+  onCommit,
+  onCancel,
+}: {
+  value: string;
+  options: string[];
+  onCommit: (val: string) => void;
+  onCancel: () => void;
+}) {
+  const selectRef = useRef<HTMLSelectElement>(null);
+
+  useEffect(() => {
+    selectRef.current?.focus();
+  }, []);
+
+  return (
+    <select
+      ref={selectRef}
+      defaultValue={value}
+      onChange={(e) => onCommit(e.target.value)}
+      onBlur={() => onCancel()}
+      onKeyDown={(e) => {
+        if (e.key === "Escape") onCancel();
+      }}
+      className="border border-primary rounded px-1.5 py-0.5 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-primary"
+    >
+      {options.map((opt) => (
+        <option key={opt} value={opt}>
+          {opt}
+        </option>
+      ))}
+    </select>
+  );
 }
 
 function StatusCombobox({
@@ -137,6 +170,7 @@ export function InlineCell({
 
   const isStatus = STATUS_FIELDS.includes(fieldName);
   const isDate = DATE_FIELDS.includes(fieldName);
+  const isLinkStatus = fieldName === "linkStatus";
   const comboOptions =
     customOptions && customOptions.length > 0
       ? customOptions
@@ -145,6 +179,22 @@ export function InlineCell({
         : null;
 
   if (editing) {
+    if (isLinkStatus) {
+      return (
+        <LinkStatusDropdown
+          value={draft}
+          options={LINK_STATUS_OPTIONS}
+          onCommit={(val) => {
+            setDraft(val);
+            commit(val);
+          }}
+          onCancel={() => {
+            setDraft(value);
+            setEditing(false);
+          }}
+        />
+      );
+    }
     if (comboOptions) {
       return (
         <StatusCombobox
@@ -192,7 +242,7 @@ export function InlineCell({
           onClick={() => setEditing(true)}
           className="cursor-pointer border-none bg-transparent p-0"
         >
-          <StatusChip value={value} />
+          <StatusChip value={value} field={fieldName} />
         </button>
       ) : (
         <button

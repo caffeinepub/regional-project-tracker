@@ -27,6 +27,7 @@ const EDITABLE_COLUMNS: {
 }[] = [
   { key: "projectName", label: "Project Name" },
   { key: "linkStatus", label: "Link Status" },
+  { key: "linkComments", label: "Link Comments" },
   { key: "receivedDate", label: "Received Date" },
   { key: "dataStatus", label: "Data Status" },
   { key: "quotaRedirectStatus", label: "Quota/Redirect" },
